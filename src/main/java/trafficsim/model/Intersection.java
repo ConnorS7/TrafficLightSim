@@ -8,14 +8,23 @@ import java.util.*;
 public class Intersection implements IObserver {
 
     private final Map<Direction, Queue<Car>> lanes = new HashMap<>();
+    private final Map<Direction, LightColor> lights = new HashMap<>();
 
     private Direction currentGreen = Direction.NORTH;
     private LightColor currentLightColor = LightColor.RED;
 
+    private static final int NORTH_STOP_Y = 180;
+    private static final int SOUTH_STOP_Y = 315;
+    private static final int EAST_STOP_X  = 315;
+    private static final int WEST_STOP_X  = 180;
+
     public Intersection() {
         for (Direction direction : Direction.values()) {
             lanes.put(direction, new LinkedList<>());
+            lights.put(direction, LightColor.RED);
         }
+
+        lights.put(Direction.NORTH, LightColor.RED);
     }
 
     //CAR MANAGEMENT
@@ -59,13 +68,55 @@ public class Intersection implements IObserver {
     //CAR MOVEMENT LOGIC
 
     public void updateCarPositions(){
-        for (Queue<Car> lane : lanes.values()){
+        for (Direction dir : lanes.keySet()){
+
+            Queue<Car> lane = lanes.get(dir);
+
+            Car frontCar = null;
+
             for (Car car : lane) {
-                if(lane == lanes.get(currentGreen) && currentLightColor == LightColor.GREEN){
+
+                boolean canMove = canCarMove(car, frontCar, dir);
+
+                if (canMove) {
                     car.move();
                 }
+
+                frontCar = car;
             }
         }
+    }
+
+    private boolean canCarMove(Car car, Car frontCar, Direction dir){
+        LightColor light = lights.get(dir);
+
+        if(frontCar != null && isTooClose(car, frontCar, dir)){
+            return false;
+        }
+
+        return light != LightColor.RED || !isAtStopLine(car, dir);
+    }
+
+    private boolean isTooClose(Car car, Car front, Direction dir) {
+
+        int gap = 45;
+
+        return switch (dir) {
+            case NORTH -> front.getY() - car.getY() < gap;
+            case SOUTH -> car.getY() - front.getY() < gap;
+            case EAST  -> car.getX() - front.getX() < gap;
+            case WEST  -> front.getX() - car.getX() < gap;
+        };
+    }
+
+    private boolean isAtStopLine(Car car, Direction dir) {
+
+        return switch (dir) {
+            case NORTH -> car.getY() >= NORTH_STOP_Y;
+            case SOUTH -> car.getY() <= SOUTH_STOP_Y;
+            case EAST  -> car.getX() <= EAST_STOP_X;
+            case WEST  -> car.getX() >= WEST_STOP_X;
+        };
     }
 
     private void allowCarsToPass() {
@@ -83,13 +134,23 @@ public class Intersection implements IObserver {
 
     //DIRECTION CONTROL
 
+    public void setGreen(Direction direction){
+        for(Direction dir : Direction.values()){
+            lights.put(dir, LightColor.RED);
+        }
+
+        lights.put(direction, LightColor.GREEN);
+    }
+
     public void nextDirection(){
         currentGreen = switch (currentGreen){
-            case NORTH -> Direction.NORTH;
-            case EAST -> Direction.EAST;
-            case SOUTH -> Direction.SOUTH;
-            case WEST -> Direction.WEST;
+            case NORTH -> Direction.EAST;
+            case EAST -> Direction.SOUTH;
+            case SOUTH -> Direction.WEST;
+            case WEST -> Direction.NORTH;
         };
+
+        setGreen(currentGreen);
     }
 
     public Direction getCurrentDirection(){
@@ -100,6 +161,10 @@ public class Intersection implements IObserver {
 
     public int getCurrentDirectionQueueSize(){
         return lanes.get(currentGreen).size();
+    }
+
+    public LightColor getTrafficLight(Direction direction){
+        return lights.get(direction);
     }
 
     public int getDirectionQueueSize(Direction direction){

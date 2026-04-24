@@ -25,10 +25,10 @@ public class Car {
                 y -= 3; //move down
                 break;
             case EAST:
-                x += 3; //move right
+                x -= 3; //move right
                 break;
             case WEST:
-                x -= 3; //move left
+                x += 3; //move left
                 break;
         }
     }

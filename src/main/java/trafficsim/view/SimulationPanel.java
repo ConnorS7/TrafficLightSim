@@ -2,6 +2,7 @@ package trafficsim.view;
 
 import trafficsim.model.Direction;
 import trafficsim.model.Intersection;
+import trafficsim.model.LightColor;
 import trafficsim.model.TrafficLight;
 import trafficsim.observer.Car;
 
@@ -18,8 +19,8 @@ public class SimulationPanel extends JPanel {
     private long startTime;
     private JLabel timerLabel;
 
-    private int numCars = 0;
-    private int maxCars = 4;
+    private int spawnCounter = 0;
+    private int spawnRate = 45;
 
     public SimulationPanel(TrafficLight light) {
         this.light = light;
@@ -35,8 +36,14 @@ public class SimulationPanel extends JPanel {
 
     private void startLoop(){
         new Timer(50, e -> {
-            spawnCars();
             intersection.updateCarPositions();
+
+            spawnCounter++;
+
+            if (spawnCounter >= spawnRate) {
+                spawnCars();
+                spawnCounter = 0;
+            }
 
             updateTimer();
             repaint();
@@ -70,12 +77,9 @@ public class SimulationPanel extends JPanel {
     //CAR HANDLING
 
     private void spawnCars(){
-        while(numCars < maxCars){
-            Direction dir = Direction.values()[(int)(Math.random() * 4)];
-            //Direction dir = Direction.NORTH;
+        Direction dir = Direction.values()[(int)(Math.random() * 4)];
 
-            intersection.addCar(dir, "Car" + numCars++);
-        }
+        intersection.addCar(dir, "Car");
     }
 
     //RENDERING
@@ -103,15 +107,22 @@ public class SimulationPanel extends JPanel {
         g.fillRect(225,225,70,70);
     }
 
-    private void drawTrafficLights(Graphics g){
-        Color color = switch (light.getColor()){
-            case RED -> Color.RED;
-            case YELLOW -> Color.YELLOW;
-            case GREEN -> Color.GREEN;
-        };
+    private void drawTrafficLights(Graphics g) {
+        drawLight(g, 253, 220, intersection.getTrafficLight(Direction.NORTH));
+        drawLight(g, 285, 253, intersection.getTrafficLight(Direction.EAST));
+        drawLight(g, 253, 285, intersection.getTrafficLight(Direction.SOUTH));
+        drawLight(g, 220, 253, intersection.getTrafficLight(Direction.WEST));
+    }
 
-        g.setColor(color);
-        g.fillOval(275, 205, 20, 20);
+    private void drawLight(Graphics g, int x, int y, LightColor color) {
+
+        switch (color) {
+            case RED -> g.setColor(Color.RED);
+            case GREEN -> g.setColor(Color.GREEN);
+            case YELLOW -> g.setColor(Color.ORANGE);
+        }
+
+        g.fillOval(x, y, 15, 15);
     }
 
     private void drawCars(Graphics g){
