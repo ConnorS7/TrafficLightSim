@@ -2,22 +2,24 @@ package trafficsim.model;
 
 import trafficsim.observer.IObserver;
 import trafficsim.state.ILightState;
-import trafficsim.strategy.ITimingStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TrafficLight {
     private ILightState lightState;
-    private final ITimingStrategy timingStrategy;
     private final Intersection intersection;
+
     private int timer = 0;
+
+    private static final int RED_DURATION = 5;
+    private static final int GREEN_DURATION = 5;
+    private static final int YELLOW_DURATION = 2;
 
     private List<IObserver> observers = new ArrayList<>();
 
-    public TrafficLight(ILightState initialState, ITimingStrategy timingStrategy,  Intersection intersection) {
+    public TrafficLight(ILightState initialState, Intersection intersection) {
         this.lightState = initialState;
-        this.timingStrategy = timingStrategy;
         this.intersection = intersection;
     }
 
@@ -37,10 +39,6 @@ public class TrafficLight {
         return timer;
     }
 
-    public ITimingStrategy getTimingStrategy() {
-        return timingStrategy;
-    }
-
     public LightColor getColor(){
         return lightState.getColor();
     }
@@ -57,5 +55,17 @@ public class TrafficLight {
         for (IObserver observer : observers){
             observer.update(getColor());
         }
+    }
+
+    public int getRedDuration() {
+        return RED_DURATION;
+    }
+
+    public int getYellowDuration() {
+        return YELLOW_DURATION;
+    }
+
+    public int getGreenDuration() {
+        return GREEN_DURATION;
     }
 }

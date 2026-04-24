@@ -5,6 +5,8 @@ import trafficsim.model.Intersection;
 import trafficsim.model.LightColor;
 import trafficsim.model.TrafficLight;
 import trafficsim.observer.Car;
+import trafficsim.strategy.AggressiveMovementStrategy;
+import trafficsim.strategy.DefaultMovementStrategy;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -25,6 +27,7 @@ public class SimulationPanel extends JPanel {
     public SimulationPanel(TrafficLight light) {
         this.light = light;
         this.intersection = light.getIntersection();
+        intersection.setMovementStrategy(new DefaultMovementStrategy());
 
         setPreferredSize(new Dimension(500,500));
         setLayout(null);
@@ -81,7 +84,6 @@ public class SimulationPanel extends JPanel {
 
         intersection.addCar(dir, "Car");
     }
-
     //RENDERING
 
     protected void paintComponent(Graphics g){

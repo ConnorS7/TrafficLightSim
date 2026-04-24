@@ -6,7 +6,7 @@ import trafficsim.model.TrafficLight;
 public class YellowState implements ILightState{
     @Override
     public void handle(TrafficLight trafficLight) {
-        if(trafficLight.getTimer() >= trafficLight.getTimingStrategy().getYellowDuration()){
+        if(trafficLight.getTimer() >= trafficLight.getYellowDuration()){
             trafficLight.setLightState(new RedState());
         }
     }

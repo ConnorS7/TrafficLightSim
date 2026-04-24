@@ -2,7 +2,6 @@ import org.junit.jupiter.api.Test;
 import trafficsim.model.LightColor;
 import trafficsim.model.TrafficLight;
 import trafficsim.state.RedState;
-import trafficsim.strategy.FixedTimingStrategy;
 
 import static org.junit.jupiter.api.Assertions.*;
 

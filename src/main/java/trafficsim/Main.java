@@ -5,7 +5,7 @@ import trafficsim.view.SimulationUI;
 
 public class  Main {
     public static void main(String[] args) {
-        var light = TrafficLightFactory.createSmartIntersection();
+        var light = TrafficLightFactory.createIntersection();
         new SimulationUI(light);
     }
 }

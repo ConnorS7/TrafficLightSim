@@ -2,6 +2,7 @@ package trafficsim.model;
 
 import trafficsim.observer.Car;
 import trafficsim.observer.IObserver;
+import trafficsim.strategy.MovementStrategy;
 
 import java.util.*;
 
@@ -12,11 +13,7 @@ public class Intersection implements IObserver {
 
     private Direction currentGreen = Direction.NORTH;
     private LightColor currentLightColor = LightColor.RED;
-
-    private static final int NORTH_STOP_Y = 180;
-    private static final int SOUTH_STOP_Y = 315;
-    private static final int EAST_STOP_X  = 315;
-    private static final int WEST_STOP_X  = 180;
+    private MovementStrategy movementStrategy;
 
     public Intersection() {
         for (Direction direction : Direction.values()) {
@@ -76,7 +73,7 @@ public class Intersection implements IObserver {
 
             for (Car car : lane) {
 
-                boolean canMove = canCarMove(car, frontCar, dir);
+                boolean canMove = movementStrategy.canMove(car, frontCar, dir, lights.get(dir));
 
                 if (canMove) {
                     car.move();
@@ -87,36 +84,8 @@ public class Intersection implements IObserver {
         }
     }
 
-    private boolean canCarMove(Car car, Car frontCar, Direction dir){
-        LightColor light = lights.get(dir);
-
-        if(frontCar != null && isTooClose(car, frontCar, dir)){
-            return false;
-        }
-
-        return light != LightColor.RED || !isAtStopLine(car, dir);
-    }
-
-    private boolean isTooClose(Car car, Car front, Direction dir) {
-
-        int gap = 45;
-
-        return switch (dir) {
-            case NORTH -> front.getY() - car.getY() < gap;
-            case SOUTH -> car.getY() - front.getY() < gap;
-            case EAST  -> car.getX() - front.getX() < gap;
-            case WEST  -> front.getX() - car.getX() < gap;
-        };
-    }
-
-    private boolean isAtStopLine(Car car, Direction dir) {
-
-        return switch (dir) {
-            case NORTH -> car.getY() >= NORTH_STOP_Y;
-            case SOUTH -> car.getY() <= SOUTH_STOP_Y;
-            case EAST  -> car.getX() <= EAST_STOP_X;
-            case WEST  -> car.getX() >= WEST_STOP_X;
-        };
+    public void setMovementStrategy(MovementStrategy movementStrategy) {
+        this.movementStrategy = movementStrategy;
     }
 
     private void allowCarsToPass() {
