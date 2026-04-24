@@ -7,6 +7,8 @@ public class RedState implements ILightState {
     @Override
     public void handle(TrafficLight trafficLight) {
         if(trafficLight.getTimer() >= trafficLight.getTimingStrategy().getRedDuration()){
+
+            trafficLight.getIntersection().nextDirection();
             trafficLight.setLightState(new GreenState());
         }
     }

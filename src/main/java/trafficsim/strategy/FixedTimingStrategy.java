@@ -1,18 +1,23 @@
 package trafficsim.strategy;
 
 public class FixedTimingStrategy implements ITimingStrategy{
+    private static final int RED_DURATION = 5;
+    private static final int GREEN_DURATION = 5;
+    private static final int YELLOW_DURATION = 2;
+
+
     @Override
     public int getRedDuration() {
-        return 5;
+        return RED_DURATION;
     }
 
     @Override
     public int getYellowDuration() {
-        return 2;
+        return YELLOW_DURATION;
     }
 
     @Override
     public int getGreenDuration() {
-        return 5;
+        return GREEN_DURATION;
     }
 }
