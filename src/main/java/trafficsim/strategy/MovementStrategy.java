@@ -1,8 +1,10 @@
 package trafficsim.strategy;
 
 import trafficsim.model.*;
-import trafficsim.observer.Car;
+import trafficsim.decorator.ICar;
 
 public interface MovementStrategy {
-    boolean canMove(Car car, Car frontCar, Direction dir, LightColor lightColor);
+    boolean canMove(ICar car, ICar frontCar, Direction dir, LightColor lightColor);
+
+    long getSpawnRate();
 }

@@ -1,7 +1,7 @@
 package trafficsim.strategy;
 
 import trafficsim.model.*;
-import trafficsim.observer.Car;
+import trafficsim.decorator.ICar;
 
 public abstract class AbstractMovementStrategy implements MovementStrategy {
 
@@ -31,7 +31,7 @@ public abstract class AbstractMovementStrategy implements MovementStrategy {
     }
 
     @Override
-    public boolean canMove(Car car, Car frontCar, Direction dir, LightColor light) {
+    public boolean canMove(ICar car, ICar frontCar, Direction dir, LightColor light) {
         if (frontCar != null && isTooClose(car, frontCar, dir)) {
             return false;
         }
@@ -41,7 +41,7 @@ public abstract class AbstractMovementStrategy implements MovementStrategy {
                 || hasPassedIntersection(car, dir);
     }
 
-    private boolean isTooClose(Car car, Car front, Direction dir) {
+    private boolean isTooClose(ICar car, ICar front, Direction dir) {
         return switch (dir) {
             case NORTH -> front.getY() - car.getY() < GAP;
             case SOUTH -> car.getY() - front.getY() < GAP;
@@ -50,7 +50,7 @@ public abstract class AbstractMovementStrategy implements MovementStrategy {
         };
     }
 
-    private boolean isAtStopLine(Car car, Direction dir) {
+    private boolean isAtStopLine(ICar car, Direction dir) {
         return switch (dir) {
             case NORTH -> car.getY() >= NORTH_STOP_Y;
             case SOUTH -> car.getY() <= SOUTH_STOP_Y;
@@ -59,7 +59,7 @@ public abstract class AbstractMovementStrategy implements MovementStrategy {
         };
     }
 
-    private boolean hasPassedIntersection(Car car, Direction dir) {
+    private boolean hasPassedIntersection(ICar car, Direction dir) {
         return switch (dir) {
             case NORTH -> car.getY() > INTERSECTION_NORTH;
             case SOUTH -> car.getY() < INTERSECTION_SOUTH;

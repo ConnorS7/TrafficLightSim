@@ -12,4 +12,9 @@ public class DefaultMovementStrategy extends AbstractMovementStrategy {
     public DefaultMovementStrategy() {
         super(GAP, NORTH_STOP_Y, SOUTH_STOP_Y, EAST_STOP_X, WEST_STOP_X);
     }
+
+    @Override
+    public long getSpawnRate() {
+        return 500 + (long)(Math.random() * 1500);
+    }
 }

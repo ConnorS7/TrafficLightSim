@@ -1,30 +1,58 @@
 package trafficsim.model;
 
-import trafficsim.observer.Car;
-import trafficsim.observer.IObserver;
+import trafficsim.controller.IntersectionController;
+import trafficsim.decorator.BasicCar;
+import trafficsim.decorator.*;
 import trafficsim.strategy.MovementStrategy;
 
 import java.util.*;
 
-public class Intersection implements IObserver {
+public class Intersection {
 
-    private final Map<Direction, Queue<Car>> lanes = new HashMap<>();
-    private final Map<Direction, LightColor> lights = new HashMap<>();
+    private final Map<Direction, Queue<ICar>> lanes = new HashMap<>();
+    private final Map<Direction, TrafficLight>  lights = new HashMap<>();
 
-    private Direction currentGreen = Direction.NORTH;
-    private LightColor currentLightColor = LightColor.RED;
     private MovementStrategy movementStrategy;
+    private IntersectionController controller;
 
-    public Intersection() {
-        for (Direction direction : Direction.values()) {
+    private long spawnTimer = 0;
+
+    public Intersection(MovementStrategy movementStrategy) {
+        this.movementStrategy = movementStrategy;
+
+        for(Direction direction : Direction.values()){
             lanes.put(direction, new LinkedList<>());
-            lights.put(direction, LightColor.RED);
         }
 
-        lights.put(Direction.NORTH, LightColor.RED);
+        lights.put(Direction.NORTH, new TrafficLight());
+        lights.put(Direction.EAST, new TrafficLight());
+        lights.put(Direction.SOUTH, new TrafficLight());
+        lights.put(Direction.WEST, new TrafficLight());
+
+        controller = new IntersectionController(lights);
+    }
+
+    //UPDATE
+
+    public void update(long deltaTime) {
+        controller.update(deltaTime);
+        updateCars(deltaTime);
+
+        handleSpawning(deltaTime);
     }
 
     //CAR MANAGEMENT
+
+    public void handleSpawning(long deltaTime) {
+        spawnTimer += deltaTime;
+
+        if(spawnTimer >= movementStrategy.getSpawnRate()){
+            spawnTimer = 0;
+
+            Direction dir = Direction.values()[(int)(Math.random() * 4)];
+            addCar(dir, "Car-" + (System.currentTimeMillis()/1000));
+        }
+    }
 
     public void addCar(Direction direction, String name){
         int x = 0, y = 0;
@@ -36,107 +64,52 @@ public class Intersection implements IObserver {
             case WEST  -> { x = 0; y = 265; }
         }
 
-        Car car = new Car(name, x, y, direction);
+        ICar car = new BasicCar(name, x, y, direction);
+
+        double rand = Math.random();
+
+        if (rand < 0.20) {
+            car = new SportsCar(car);
+        } else if (rand > 0.80) {
+            car = new Truck(car);
+        }
+
         lanes.get(direction).add(car);
     }
 
-    public List<Car> getAllCars(){
-        List<Car> allCars = new ArrayList<>();
+    private void updateCars(long deltaTime) {
+        for(Direction direction : lanes.keySet()){
+            Queue<ICar> lane = lanes.get(direction);
 
-        for(Queue<Car> queue : lanes.values()){
-            allCars.addAll(queue);
-        }
+            ICar front = null;
 
-        return allCars;
-    }
+            for(ICar car : lane) {
+                LightColor lightColor = lights.get(direction).getColor();
 
-    //LIGHT OBSERVER UPDATE
+                boolean canMove = movementStrategy.canMove(car, front, direction, lightColor);
 
-    @Override
-    public void update(LightColor color) {
-        this.currentLightColor = color;
-        System.out.println("Light updated to: " + color);
-
-//        if(color == LightColor.GREEN){
-//            allowCarsToPass();
-//        }
-    }
-
-    //CAR MOVEMENT LOGIC
-
-    public void updateCarPositions(){
-        for (Direction dir : lanes.keySet()){
-
-            Queue<Car> lane = lanes.get(dir);
-
-            Car frontCar = null;
-
-            for (Car car : lane) {
-
-                boolean canMove = movementStrategy.canMove(car, frontCar, dir, lights.get(dir));
-
-                if (canMove) {
-                    car.move();
+                if(canMove){
+                    car.move(deltaTime);
                 }
 
-                frontCar = car;
+                front = car;
             }
         }
-    }
-
-    public void setMovementStrategy(MovementStrategy movementStrategy) {
-        this.movementStrategy = movementStrategy;
-    }
-
-    private void allowCarsToPass() {
-        Queue<Car> carQueue = lanes.get(currentGreen);
-
-        int numCarsPassing = Math.min(2, carQueue.size());
-
-        for (int i = 0; i < numCarsPassing; i++){
-            Car car = carQueue.poll();
-            if(car != null){
-                System.out.println(car.getName() + " passes intersection");
-            }
-        }
-    }
-
-    //DIRECTION CONTROL
-
-    public void setGreen(Direction direction){
-        for(Direction dir : Direction.values()){
-            lights.put(dir, LightColor.RED);
-        }
-
-        lights.put(direction, LightColor.GREEN);
-    }
-
-    public void nextDirection(){
-        currentGreen = switch (currentGreen){
-            case NORTH -> Direction.EAST;
-            case EAST -> Direction.SOUTH;
-            case SOUTH -> Direction.WEST;
-            case WEST -> Direction.NORTH;
-        };
-
-        setGreen(currentGreen);
-    }
-
-    public Direction getCurrentDirection(){
-        return currentGreen;
     }
 
     //UI HELP
 
-    public int getCurrentDirectionQueueSize(){
-        return lanes.get(currentGreen).size();
-    }
-
-    public LightColor getTrafficLight(Direction direction){
+    public TrafficLight getTrafficLight(Direction direction){
         return lights.get(direction);
     }
 
-    public int getDirectionQueueSize(Direction direction){
-        return lanes.get(direction).size();
+    public List<ICar> getAllCars(){
+        List<ICar> allCars = new ArrayList<>();
+
+        for(Queue<ICar> queue : lanes.values()){
+            allCars.addAll(queue);
+        }
+
+        return allCars;
     }
 }

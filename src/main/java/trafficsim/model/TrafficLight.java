@@ -1,60 +1,28 @@
 package trafficsim.model;
 
-import trafficsim.observer.IObserver;
 import trafficsim.state.ILightState;
-
-import java.util.ArrayList;
-import java.util.List;
+import trafficsim.state.RedState;
 
 public class TrafficLight {
-    private ILightState lightState;
-    private final Intersection intersection;
+    private ILightState lightState = new RedState(RED_DURATION);
+    private long timeInState;
 
-    private int timer = 0;
+    private static final int RED_DURATION = 7000;
+    private static final int GREEN_DURATION = 7000;
+    private static final int YELLOW_DURATION = 4000;
 
-    private static final int RED_DURATION = 5;
-    private static final int GREEN_DURATION = 5;
-    private static final int YELLOW_DURATION = 2;
-
-    private List<IObserver> observers = new ArrayList<>();
-
-    public TrafficLight(ILightState initialState, Intersection intersection) {
-        this.lightState = initialState;
-        this.intersection = intersection;
-    }
-
-    public void update(){
-        timer++;
-        lightState.handle(this);
+    public void update(long deltaTime) {
+        timeInState += deltaTime;
+        lightState.handle(this, timeInState);
     }
 
     public void setLightState(ILightState lightState) {
         this.lightState = lightState;
-        this.timer = 0;
-
-        notifyObservers();
-    }
-
-    public int getTimer(){
-        return timer;
+        this.timeInState = 0;
     }
 
     public LightColor getColor(){
         return lightState.getColor();
-    }
-
-    public Intersection getIntersection() {
-        return intersection;
-    }
-
-    public void addObserver(IObserver observer){
-        observers.add(observer);
-    }
-
-    public void notifyObservers(){
-        for (IObserver observer : observers){
-            observer.update(getColor());
-        }
     }
 
     public int getRedDuration() {
