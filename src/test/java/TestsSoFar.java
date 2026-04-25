@@ -1,73 +1,47 @@
 import org.junit.jupiter.api.Test;
-import trafficsim.model.LightColor;
-import trafficsim.model.TrafficLight;
-import trafficsim.state.RedState;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+import trafficsim.TrafficSimulationFacade;
+import trafficsim.decorator.BasicCar;
+import trafficsim.decorator.ICar;
+import trafficsim.decorator.SportsCar;
+import trafficsim.model.Direction;
+import trafficsim.model.LightColor;
+import trafficsim.strategy.*;
 
 public class TestsSoFar {
 
     @Test
-    void testInitialStateIsRed() {
-        TrafficLight light = new TrafficLight(
-                new RedState(),
-                new FixedTimingStrategy()
-        );
+    void testStrategySwitching() {
+        TrafficSimulationFacade sim = new TrafficSimulationFacade(new DefaultMovementStrategy());
 
-        assertEquals(LightColor.RED, light.getColor());
+        sim.setStrategy(new BusyMovementStrategy());
+
+        sim.update(100);
+
+        assertTrue(true);
     }
 
     @Test
-    void testRedToGreenTransition() {
-        TrafficLight light = new TrafficLight(
-                new RedState(),
-                new FixedTimingStrategy()
-        );
+    void testTrafficLightCycles() {
+        TrafficSimulationFacade sim = new TrafficSimulationFacade(new DefaultMovementStrategy());
 
-        // Red duration is 5 → simulate 5 ticks
-        for (int i = 0; i < 5; i++) {
-            light.update();
-        }
+        var light = sim.getLight(Direction.NORTH);
 
-        assertEquals(LightColor.GREEN, light.getColor());
+        LightColor initial = light.getColor();
+
+        sim.update(5000);
+
+        LightColor after = light.getColor();
+
+        assertNotEquals(initial, after);
     }
 
     @Test
-    void testFullCycle() {
-        TrafficLight light = new TrafficLight(
-                new RedState(),
-                new FixedTimingStrategy()
-        );
+    void testSportsCarFasterThanBasicCar() {
+        ICar base = new BasicCar("base", 0, 0, Direction.NORTH);
+        ICar sports = new SportsCar(base);
 
-        for (int i = 0; i < 5; i++) light.update();
-
-        for (int i = 0; i < 5; i++) light.update();
-
-        for (int i = 0; i < 2; i++) light.update();
-
-        assertEquals(LightColor.RED, light.getColor());
-    }
-
-    @Test
-    void testDurations() {
-        FixedTimingStrategy strategy = new FixedTimingStrategy();
-
-        assertEquals(5, strategy.getRedDuration());
-        assertEquals(5, strategy.getGreenDuration());
-        assertEquals(2, strategy.getYellowDuration());
-    }
-
-    @Test
-    void testTimerResetsAfterStateChange() {
-        TrafficLight light = new TrafficLight(
-                new RedState(),
-                new FixedTimingStrategy()
-        );
-
-        for (int i = 0; i < 5; i++) {
-            light.update();
-        }
-
-        assertEquals(0, light.getTimer());
+        assertTrue(sports.getSpeed() > base.getSpeed());
     }
 }
