@@ -33,10 +33,9 @@ This project demonstrates four core design patterns:
 
     - Purpose: To provide a simplified interface for interacting with the complex traffic simulation system.
     - Implementation: A TrafficSimulationFacade class acts as the single entry point between the UI and the simulation engine. Instead of the UI directly interacting with multiple subsystems, it communicates only with the facade. The facade internally delegates responsibilities such as:
-
-Updating the simulation state
-Controlling traffic light phases through the controller
-Spawning and retrieving cars from the intersection
-Managing pause, resume, reset functionality
-Applying global simulation speed scaling
+        - Updating the simulation state
+        - Controlling traffic light phases through the controller
+        - Spawning and retrieving cars from the intersection
+        - Managing pause, resume, reset functionality
+        - Applying global simulation speed scaling
     - Benefit: This pattern significantly reduces coupling between the UI and the simulation logic. It centralizes control logic into a single class, making the system easier to understand, maintain, and extend. It also ensures that changes to internal simulation components do not affect the UI layer.
