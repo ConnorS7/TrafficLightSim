@@ -32,6 +32,10 @@ public class Intersection {
         controller = new IntersectionController(lights);
     }
 
+    public void setMovementStrategy(MovementStrategy movementStrategy) {
+        this.movementStrategy = movementStrategy;
+    }
+
     //UPDATE
 
     public void update(long deltaTime) {
@@ -101,6 +105,10 @@ public class Intersection {
 
     public TrafficLight getTrafficLight(Direction direction){
         return lights.get(direction);
+    }
+
+    public Map<Direction, TrafficLight> getTrafficLights(){
+        return lights;
     }
 
     public List<ICar> getAllCars(){
